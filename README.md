@@ -12,7 +12,32 @@
 python -m unittest discover -s tests
 ```
 
-运行 GUI 前，请准备自己的输入文件和费率配置。不要把真实业务文件、客户名称、合同费率或运行记录提交到版本库。
+## 一键运行完全脱敏 Demo
+
+首次运行请先安装项目依赖：
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+无需准备任何业务文件；下列命令会生成一份可直接打开的合成 Excel 输入数据和完整示例报告：
+
+```powershell
+python -m warehouse_analysis.demo
+```
+
+文件默认生成到 `demo_output/`（已被 Git 忽略，不会提交）。该目录会包含：
+
+- `合成演示输入数据*.xlsx`：带“演示说明”页的出入库、期初库存和费率数据；仓库、物料、批次、数量和费率均为人为构造。
+- `仓储分析报告_*.xlsx`：正式报告链路生成的 12 张工作表，包含 FIFO 批次明细、仓储费用、库龄、月末库存快照、费用敏感性分析和敏感性影响排名。
+
+可指定输出目录：
+
+```powershell
+python -m warehouse_analysis.demo --output-dir .\my_demo_output
+```
+
+Demo 不读取外部 Excel、数据库、环境变量或网络资源；它只使用代码中固定的合成记录。运行 GUI 前，请准备自己的输入文件和费率配置。不要把真实业务文件、客户名称、合同费率或运行记录提交到版本库。
 
 ## 目录
 
