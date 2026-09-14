@@ -13,6 +13,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.styles import Alignment, Font, PatternFill
 
 from warehouse_analysis.core.models import StatPeriod
 from warehouse_analysis.service import AnalysisRunResult, run_analysis
@@ -42,7 +44,7 @@ def build_synthetic_inputs() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         [
             ["演示仓A", "示例树脂A", "合成材料", "入库", "2025-01-08", 120, "DEMO-IN-001"],
             ["演示仓A", "示例树脂B", "合成材料", "入库", "2025-01-20", 80, "DEMO-IN-002"],
-            ["演示仓A", "示例树脂A", "合成材料", "出库", "2025-02-05", 90, "DEMO-OUT-001"],
+            ["演示仓A", "示例树脂A", "合成材料", "出库", "2025-02-05", 130, "DEMO-OUT-001"],
             ["演示仓A", "示例树脂B", "合成材料", "入库", "2025-02-18", 60, "DEMO-IN-003"],
             ["演示仓A", "示例树脂B", "合成材料", "出库", "2025-03-12", 70, "DEMO-OUT-002"],
             ["演示仓B", "示例包装膜", "包装材料", "入库", "2025-01-15", 150, "DEMO-IN-004"],
@@ -101,7 +103,35 @@ def write_synthetic_workbook(output_dir: str | Path) -> Path:
         transactions.to_excel(writer, sheet_name="出入库明细", index=False)
         openings.to_excel(writer, sheet_name="期初库存", index=False)
         rates.to_excel(writer, sheet_name="计价规则", index=False)
+    _style_synthetic_workbook(input_path)
     return input_path
+
+
+def _style_synthetic_workbook(path: Path) -> None:
+    """设置演示输入格式，便于逐表理解和检查。"""
+    workbook = load_workbook(path)
+    header_fill = PatternFill("solid", fgColor="4472C4")
+    for sheet in workbook.worksheets:
+        sheet.sheet_view.showGridLines = False
+        sheet.freeze_panes = "A2"
+        sheet.auto_filter.ref = sheet.dimensions
+        sheet.row_dimensions[1].height = 28
+        for cell in sheet[1]:
+            cell.fill = header_fill
+            cell.font = Font(name="微软雅黑", bold=True, color="FFFFFF")
+            cell.alignment = Alignment(
+                horizontal="center", vertical="center", wrap_text=True
+            )
+        for row in sheet.iter_rows(min_row=2):
+            for cell in row:
+                cell.font = Font(name="微软雅黑", size=10)
+                cell.alignment = Alignment(vertical="center")
+        for column in sheet.columns:
+            letter = column[0].column_letter
+            width = max(len(str(cell.value or "")) for cell in column) + 3
+            sheet.column_dimensions[letter].width = min(max(width, 12), 42)
+    workbook["演示说明"].column_dimensions["A"].width = 78
+    workbook.save(path)
 
 
 def run_demo(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> DemoRun:
