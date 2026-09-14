@@ -36,10 +36,28 @@ class SyntheticDemoTest(unittest.TestCase):
                 notice = pd.read_excel(demo.input_path, sheet_name="演示说明")
                 self.assertIn(DEMO_NOTICE, notice["说明"].tolist())
 
+            styled_input = load_workbook(demo.input_path, read_only=False)
+            for sheet in styled_input.worksheets:
+                self.assertEqual(sheet.freeze_panes, "A2")
+                self.assertFalse(sheet.sheet_view.showGridLines)
+            styled_input.close()
+
             report = load_workbook(demo.report_path, read_only=True)
             self.assertEqual(report.sheetnames, BUSINESS_REPORT_SHEETS)
             self.assertGreater(report["批次明细"].max_row, 1)
             self.assertGreater(report["费用敏感性分析"].max_row, 1)
+            details = list(report["批次明细"].iter_rows(values_only=True))
+            headers = list(details[0])
+            outbound_batch_index = headers.index("出库批次号")
+            quantity_index = headers.index("数量（吨）")
+            split_rows = [
+                row for row in details[1:]
+                if row[outbound_batch_index] == "DEMO-OUT-001"
+            ]
+            self.assertEqual(len(split_rows), 2)
+            self.assertEqual(
+                sorted(row[quantity_index] for row in split_rows), [30, 100]
+            )
             report.close()
 
 

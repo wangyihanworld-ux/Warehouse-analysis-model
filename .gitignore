@@ -24,3 +24,6 @@ config/rate_database_*.xlsx
 .vscode/
 
 demo_output/
+
+# Local personal deliverables (resume and interview handbook)
+deliverables/
