@@ -1,7 +1,6 @@
-# 仓储分析模型工具 V1.5.5 正式发布依赖
+# 仓储分析模型工具 V1.5.6 运行依赖
 pandas==3.0.3
 openpyxl==3.1.5
 matplotlib==3.10.8
-pyinstaller==6.21.0
 
 # tkinter由Windows官方Python标准库提供，不通过pip安装。
