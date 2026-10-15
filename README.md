@@ -1,5 +1,7 @@
 # 仓储成本与经营分析模型
 
+[English](README.en.md) · 中文
+
 [![tests](https://github.com/wangyihanworld-ux/Warehouse-analysis-model/actions/workflows/tests.yml/badge.svg)](https://github.com/wangyihanworld-ux/Warehouse-analysis-model/actions/workflows/tests.yml)
 
 这是一个使用 Python 开发的仓储分析工具。模型读取期初库存、出入库流水和费率规则，按照 FIFO 重建批次流转，计算仓储费用、库存余额、存放天数与库龄，并输出面向财务和经营分析的 Excel 报告。
