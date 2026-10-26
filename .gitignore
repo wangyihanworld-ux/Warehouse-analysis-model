@@ -27,3 +27,6 @@ demo_output/
 
 # Local personal deliverables (resume and interview handbook)
 deliverables/
+
+.pytest_cache/
+pytest-cache-files-*/
