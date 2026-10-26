@@ -107,6 +107,9 @@ def _rebuild_fifo(
                     "当时FIFO队列剩余量": float(available),
                     "差额": float(quantity - available),
                     "异常原因": "出库数量大于当时FIFO队列剩余量；本次出库未分摊",
+                    "问题字段": "数量",
+                    "处理状态": "整笔拒绝 待人工核查",
+                    "建议核查动作": "核对入库遗漏、期初数量和出库日期，修正源数据后重跑",
                 }
             )
             continue
