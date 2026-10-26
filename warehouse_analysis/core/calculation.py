@@ -70,6 +70,7 @@ def run_engine(
                         "统计截止日": period.end,
                         "引擎批次ID": lot["引擎批次ID"],
                         "原始批次号": lot["原始批次号"],
+                        "入库源数据行号": lot["源数据行号"],
                         "物料名称": lot["物料名称"],
                         "品类": lot["品类"],
                         "批次来源": lot["批次来源"],
@@ -78,6 +79,7 @@ def run_engine(
                         "状态": "已出库",
                         "出库日期": allocation["出库日期"],
                         "出库批次号": allocation["出库批次号"],
+                        "出库源数据行号": allocation["出库源数据行号"],
                         "数量（吨）": float(allocation["出库数量"]),
                         "存放天数": allocation["存放天数"],
                         "加权存放量（吨·天）": float(weighted),
@@ -107,6 +109,7 @@ def run_engine(
                         "统计截止日": period.end,
                         "引擎批次ID": lot["引擎批次ID"],
                         "原始批次号": lot["原始批次号"],
+                        "入库源数据行号": lot["源数据行号"],
                         "物料名称": lot["物料名称"],
                         "品类": lot["品类"],
                         "批次来源": lot["批次来源"],
@@ -123,9 +126,14 @@ def run_engine(
                         "仓储费（元）": float(weighted * rate),
                     }
                 )
-            details = pd.DataFrame(detail_rows)
-            if details.empty:
-                continue
+            # Preserve schema and anomalies even when every issue is rejected.
+            details = pd.DataFrame(detail_rows, columns=[
+                "仓库名称", "统计期间", "统计开始日", "统计截止日", "引擎批次ID",
+                "原始批次号", "入库源数据行号", "出库源数据行号", "物料名称", "品类", "批次来源", "入库日期",
+                "原始入库数量（吨）", "状态", "出库日期", "出库批次号",
+                "数量（吨）", "存放天数", "加权存放量（吨·天）",
+                "单价（元/吨/天）", "计费方式说明", "仓储费（元）",
+            ])
             details = details.sort_values(
                 [
                     "物料名称",
@@ -151,6 +159,7 @@ def run_engine(
                         "统计截止日": period.end,
                         "引擎批次ID": lot["引擎批次ID"],
                         "原始批次号": lot["原始批次号"],
+                        "入库源数据行号": lot["源数据行号"],
                         "物料名称": lot["物料名称"],
                         "品类": lot["品类"],
                         "入库日期": lot["入库日期"],
@@ -194,7 +203,6 @@ def run_engine(
                 )
 
             current = details[details["状态"] == "仍在库"]
-            end_current_materials = set(current["物料名称"])
             month_points = _month_end_points(period)
             monthly_totals = []
             for point in month_points:
@@ -213,7 +221,6 @@ def run_engine(
                     }
                     for lot in point_lots
                     if lot["剩余数量"] > 0
-                    and lot["物料名称"] in end_current_materials
                 ]
                 monthly = pd.DataFrame(point_rows)
                 if monthly.empty:
@@ -248,12 +255,12 @@ def run_engine(
             current_average_rate = (
                 current_fee / current_weighted
                 if current_weighted
-                else float(current["单价（元/吨/天）"].mean())
+                else (float(current["单价（元/吨/天）"].mean()) if not current.empty else 0.0)
             )
             issued_average_rate = (
                 issued_fee / issued_weighted
                 if issued_weighted
-                else float(issued["单价（元/吨/天）"].mean())
+                else (float(issued["单价（元/吨/天）"].mean()) if not issued.empty else 0.0)
             )
             all_warehouse.append(
                 {

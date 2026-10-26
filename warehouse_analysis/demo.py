@@ -146,6 +146,10 @@ def run_demo(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> DemoRun:
     )
     if not result.success or result.output_path is None:
         raise RuntimeError(result.error or "合成演示报告生成失败")
+    from warehouse_analysis.reproducibility import write_manifest
+    write_manifest(result.output_path.with_suffix(".manifest.json"), [input_path],
+                   {"start": str(DEMO_PERIOD.start.date()), "end": str(DEMO_PERIOD.end.date()),
+                    "rate_mode": "endpoint rate over full storage age", "synthetic": True})
     return DemoRun(
         input_path=input_path,
         report_path=result.output_path,
