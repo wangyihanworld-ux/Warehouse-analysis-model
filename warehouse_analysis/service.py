@@ -721,6 +721,7 @@ def run_analysis(
             "期末库存量（吨）": ending_inventory,
             "仓储费总额（元）": total_fee,
             "异常记录数": len(result.anomalies),
+            "报告完整性": "存在拒绝或异常记录 仅供复核" if len(result.anomalies) else "未发现已记录异常 仍需业务核对",
             "人工核对数量": manual_count,
             "数量守恒不平批次": unbalanced,
             "运行耗时（秒）": perf_counter() - started,

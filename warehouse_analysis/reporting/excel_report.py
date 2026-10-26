@@ -436,11 +436,13 @@ def build_business_report(
     if context.get("日期口径"):
         opening_description += f" | 日期口径：{context['日期口径']}"
     home["A2"] = (
-        "计算方式：FIFO | 库存单位：吨 | 费用单位：元 | "
+        "计算方式：FIFO | 库存单位：吨 | 费用单位：元（批次累计/结算口径，非当期发生额） | "
         f"敏感性：单因素线性模拟{opening_description}"
+        + (" | 存在异常或拒绝记录，报告仅供复核，不代表完整业务执行" if not result.anomalies.empty else "")
     )
     home["A2"].font = Font(name="微软雅黑", italic=True, color="555555")
-    home["A2"].alignment = Alignment(horizontal="left")
+    home["A2"].alignment = Alignment(horizontal="left", wrap_text=True)
+    home.row_dimensions[2].height = 48
     home.merge_cells(f"A3:{last_column}3")
     rate_description = ""
     if not rate_matches.empty:

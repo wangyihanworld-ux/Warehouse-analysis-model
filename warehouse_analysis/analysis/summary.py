@@ -17,6 +17,9 @@ WAREHOUSE_SUMMARY_COLUMNS = [
     "期初库存量（吨）",
     "期间入库量（吨）",
     "期间出库量（吨）",
+    "期间请求出库量（吨）",
+    "期间拒绝出库量（吨）",
+    "库存勾稽差异（吨）",
     "期末库存量（吨）",
     "平均库存量（吨）",
     "平均存放天数",
@@ -101,6 +104,8 @@ def build_warehouse_summary(
     }
     rows: list[dict[str, object]] = []
 
+    if result.warehouse_total.empty:
+        return pd.DataFrame(columns=WAREHOUSE_SUMMARY_COLUMNS)
     totals = result.warehouse_total.sort_values(
         ["仓库名称", "统计截止日", "统计开始日", "统计期间"],
         kind="stable",
@@ -151,12 +156,21 @@ def build_warehouse_summary(
             ],
             Decimal("0"),
         )
-        outbound_quantity = sum(
+        requested_outbound = sum(
             period_transactions.loc[
                 period_transactions["方向"] == "出库", "数量"
             ],
             Decimal("0"),
         )
+
+        _, accepted_allocations, _ = _rebuild_fifo(warehouse, tx, op, period.end)
+        outbound_quantity = sum(
+            (a["出库数量"] for a in accepted_allocations
+             if start <= a["出库日期"] < end_exclusive), Decimal("0")
+        )
+        rejected_outbound = requested_outbound - outbound_quantity
+        closing_quantity = Decimal(str(total["当前总库存量（吨）"]))
+        reconciliation = opening_quantity + inbound_quantity - outbound_quantity - closing_quantity
 
         details = result.batch_details[
             (result.batch_details["仓库名称"] == warehouse)
@@ -185,6 +199,9 @@ def build_warehouse_summary(
                 "期初库存量（吨）": float(opening_quantity),
                 "期间入库量（吨）": float(inbound_quantity),
                 "期间出库量（吨）": float(outbound_quantity),
+                "期间请求出库量（吨）": float(requested_outbound),
+                "期间拒绝出库量（吨）": float(rejected_outbound),
+                "库存勾稽差异（吨）": float(reconciliation),
                 "期末库存量（吨）": float(total["当前总库存量（吨）"]),
                 "平均库存量（吨）": float(
                     total["期间平均库存量（按月移动平均，吨）"]
