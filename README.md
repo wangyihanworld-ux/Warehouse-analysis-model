@@ -1,5 +1,7 @@
 # 仓储成本与经营分析模型
 
+[运行与最新验证](docs/validation-latest.md)
+
 [English](README.en.md) · 中文
 
 [![tests](https://github.com/wangyihanworld-ux/Warehouse-analysis-model/actions/workflows/tests.yml/badge.svg)](https://github.com/wangyihanworld-ux/Warehouse-analysis-model/actions/workflows/tests.yml)

@@ -10,8 +10,6 @@ PRIVATE_NAME = re.compile(r"(?:^|/)(?:private|application-materials[^/]*|privacy
 PERSONAL_PATH = re.compile(rb"(?:[A-Z]:[\\/]Users[\\/]|/Users/)[^\s/\\]+", re.I)
 KEY = re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[A-Z0-9]{16}")
 def violations(path, data):
-    if hashlib.sha256(data).hexdigest() == '578a8c8420301273ab4101b0fd586afe9fb2f266a53df715eb45ff820919ade5':
-        return []  # Reviewed technical design document, not personal application material.
     result = []
     if PRIVATE_NAME.search(path) or Path(path).suffix.lower() in {".docx", ".pdf", ".pem", ".key"} or Path(path).name == ".env":
         result.append("private-file")
@@ -40,4 +38,3 @@ if __name__ == "__main__":
     for path, kind in problems: print(f"{kind}: {path}")  # Never echo matched values.
     print(f"Privacy check: {len(problems)} finding(s). History and external caches need separate review.")
     raise SystemExit(bool(problems))
-
